@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "default"
 }
 
 datasource db {
@@ -7,19 +8,19 @@ datasource db {
 }
 
 model Attachment {
-  id          BigInt   @id @default(autoincrement())
-  ticketId    String   @db.Uuid @map("ticket_id")
-  commentId   String?  @db.Uuid @map("comment_id")
-  uploadedBy  String   @db.Uuid @map("uploaded_by")
-  fileName    String   @db.VarChar @map("file_name")
-  fileUrl     String   @map("file_url")
-  mimeType    String   @db.VarChar @map("mime_type")
-  fileSize    Int      @map("file_size")
-  uploadedAt  DateTime @default(now()) @db.Timestamptz(6) @map("uploaded_at")
+  id         BigInt   @id @default(autoincrement())
+  ticketId   String   @map("ticket_id") @db.Uuid
+  commentId  String?  @map("comment_id") @db.Uuid
+  uploadedBy String   @map("uploaded_by") @db.Uuid
+  fileName   String   @map("file_name") @db.VarChar
+  fileUrl    String   @map("file_url")
+  mimeType   String   @map("mime_type") @db.VarChar
+  fileSize   Int      @map("file_size")
+  uploadedAt DateTime @default(now()) @map("uploaded_at") @db.Timestamptz(6)
 
-  comment     TicketComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  ticket      Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  uploader    User           @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  comment  TicketComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  ticket   Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  uploader User           @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
 
   @@map("attachments")
 }
@@ -28,23 +29,23 @@ model Department {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String   @unique @db.VarChar
   description String?
-  createdAt   DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  tickets     Ticket[]
-  users       User[]
+  tickets Ticket[]
+  users   User[]
 
   @@map("departments")
 }
 
 model Notification {
   id        BigInt   @id @default(autoincrement())
-  userId    String   @db.Uuid @map("user_id")
+  userId    String   @map("user_id") @db.Uuid
   title     String   @db.VarChar
   message   String
   isRead    Boolean  @default(false) @map("is_read")
-  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("notifications")
@@ -52,36 +53,36 @@ model Notification {
 
 model Role {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String?  @unique @db.VarChar
-  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  name      String   @unique @db.VarChar
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  users     User[]
+  users User[]
 
   @@map("roles")
 }
 
 model TicketActivityLog {
   id          BigInt         @id @default(autoincrement())
-  ticketId    String         @db.Uuid @map("ticket_id")
-  performedBy String         @db.Uuid @map("performed_by")
+  ticketId    String         @map("ticket_id") @db.Uuid
+  performedBy String         @map("performed_by") @db.Uuid
   actionType  TicketActivity @map("action_type")
   oldValue    String?        @map("old_value")
   newValue    String?        @map("new_value")
-  createdAt   DateTime       @default(now()) @db.Timestamptz(6) @map("created_at")
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  performer   User   @relation(fields: [performedBy], references: [id], onUpdate: Restrict)
-  ticket      Ticket @relation(fields: [ticketId], references: [id], onUpdate: Restrict)
+  performer User   @relation(fields: [performedBy], references: [id], onUpdate: Restrict)
+  ticket    Ticket @relation(fields: [ticketId], references: [id], onUpdate: Restrict)
 
   @@map("ticket_activity_logs")
 }
 
 model TicketComment {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ticketId   String   @db.Uuid @map("ticket_id")
-  userId     String   @db.Uuid @map("user_id")
+  ticketId   String   @map("ticket_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
   comment    String
   isInternal Boolean  @default(false) @map("is_internal")
-  createdAt  DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   attachments Attachment[]
   ticket      Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
@@ -93,29 +94,29 @@ model TicketComment {
 
 model TicketCounter {
   period     String @id
-  lastNumber Int    @db.SmallInt @map("last_number")
+  lastNumber Int    @map("last_number") @db.SmallInt
 
   @@map("ticket_counters")
 }
 
 model Ticket {
-  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ticketCode  String         @unique @default(dbgenerated("generate_ticket_code()")) @db.VarChar @map("ticket_code")
-  title       String         @db.VarChar
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ticketCode  String @unique @default(dbgenerated("generate_ticket_code()")) @map("ticket_code") @db.VarChar
+  title       String @db.VarChar
   description String
 
-  status      TicketStatus   @default(OPEN)
-  priority    TicketPriority @default(MEDIUM)
+  status   TicketStatus   @default(OPEN)
+  priority TicketPriority @default(MEDIUM)
 
-  departmentId String? @db.Uuid @map("department_id")
-  createdBy    String  @db.Uuid @map("created_by")
-  assignedTo   String? @db.Uuid @map("assigned_to")
+  departmentId String? @map("department_id") @db.Uuid
+  createdBy    String  @map("created_by") @db.Uuid
+  assignedTo   String? @map("assigned_to") @db.Uuid
 
-  resolvedAt DateTime? @db.Timestamptz(6) @map("resolved_at")
-  closedAt   DateTime? @db.Timestamptz(6) @map("closed_at")
+  resolvedAt DateTime? @map("resolved_at") @db.Timestamptz(6)
+  closedAt   DateTime? @map("closed_at") @db.Timestamptz(6)
 
-  createdAt  DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
-  updatedAt  DateTime @default(now()) @db.Timestamptz(6) @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   attachments  Attachment[]
   comments     TicketComment[]
@@ -129,28 +130,27 @@ model Ticket {
   @@index([createdBy])
   @@index([priority])
   @@index([status])
-
   @@map("tickets")
 }
 
 model User {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  fullName     String    @db.VarChar @map("full_name")
-  email        String    @unique @db.VarChar
-  passwordHash String    @map("password_hash")
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fullName     String @map("full_name") @db.VarChar
+  email        String @unique @db.VarChar
+  passwordHash String @map("password_hash")
 
-  roleId       String    @db.Uuid @map("role_id")
-  departmentId String?   @db.Uuid @map("department_id")
+  roleId       String  @map("role_id") @db.Uuid
+  departmentId String? @map("department_id") @db.Uuid
 
-  isActive     Boolean   @default(true) @map("is_active")
+  isActive Boolean @default(true) @map("is_active")
 
-  createdAt    DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
-  updatedAt    DateTime? @default(now()) @db.Timestamptz(6) @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime? @default(now()) @map("updated_at") @db.Timestamptz(6)
 
-  attachments  Attachment[]
+  attachments   Attachment[]
   notifications Notification[]
-  activityLogs TicketActivityLog[]
-  comments     TicketComment[]
+  activityLogs  TicketActivityLog[]
+  comments      TicketComment[]
 
   assignedTickets Ticket[] @relation("AssignedTickets")
   createdTickets  Ticket[] @relation("CreatedTickets")
