@@ -51,23 +51,13 @@ model Notification {
   @@map("notifications")
 }
 
-model Role {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String   @unique @db.VarChar
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  users User[]
-
-  @@map("roles")
-}
-
 model TicketActivityLog {
   id          BigInt         @id @default(autoincrement())
   ticketId    String         @map("ticket_id") @db.Uuid
   performedBy String         @map("performed_by") @db.Uuid
   actionType  TicketActivity @map("action_type")
-  oldValue    String?        @map("old_value")
-  newValue    String?        @map("new_value")
+  oldValue    Json?          @map("old_value")
+  newValue    Json?          @map("new_value")
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
 
   performer User   @relation(fields: [performedBy], references: [id], onUpdate: Restrict)
@@ -116,7 +106,7 @@ model Ticket {
   closedAt   DateTime? @map("closed_at") @db.Timestamptz(6)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   attachments  Attachment[]
   comments     TicketComment[]
@@ -139,8 +129,8 @@ model User {
   email        String @unique @db.VarChar
   passwordHash String @map("password_hash")
 
-  roleId       String  @map("role_id") @db.Uuid
-  departmentId String? @map("department_id") @db.Uuid
+  role         UserRole @default(EMPLOYEE) @map("role")
+  departmentId String?  @map("department_id") @db.Uuid
 
   isActive Boolean @default(true) @map("is_active")
 
@@ -156,17 +146,21 @@ model User {
   createdTickets  Ticket[] @relation("CreatedTickets")
 
   department Department? @relation(fields: [departmentId], references: [id])
-  role       Role        @relation(fields: [roleId], references: [id], onDelete: NoAction)
 
   @@map("users")
 }
 
 enum TicketActivity {
   TICKET_CREATED
+  TICKET_UPDATED
+
   STATUS_CHANGED
+  PRIORITY_CHANGED
   ASSIGNED_CHANGED
+  DEPARTMENT_CHANGED
+
   COMMENT_ADDED
-  TICKET_REOPENED
+  ATTACHMENT_ADDED
 
   @@map("ticket_activity")
 }
@@ -188,4 +182,12 @@ enum TicketStatus {
   REOPENED
 
   @@map("ticket_status")
+}
+
+enum UserRole {
+  ADMIN
+  AGENT
+  EMPLOYEE
+
+  @@map("user_role")
 }

@@ -1,7 +1,8 @@
 import { NextFunction, Response } from "express";
 import { AuthRequest } from "./auth.middleware";
+import { UserRole } from "@prisma/client";
 
-export function authorize(...roles: string[]) {
+export function authorize(...roles: UserRole[]) {
   return (
     req: AuthRequest,
     res: Response,
